@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "config.h": "c",
+        "ffs_oper.h": "c",
+        "v_disk.h": "c",
+        "ffs_log.h": "c",
+        "types.h": "c",
+        "define.h": "c",
+        "stdlib.h": "c",
+        "fuse.h": "c",
+        "stdio.h": "c",
+        "errno.h": "c",
+        "string.h": "c"
+    }
+}
