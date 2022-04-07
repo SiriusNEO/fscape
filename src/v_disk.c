@@ -25,45 +25,39 @@ void create_image() {
 
     FFS_DBG_INFO("init index_pool finish. \n");
 
-    FILE* index_creator = fopen(V_DISK_INDEX_PATH, "wb");
-    FILE* bank_creator = fopen(V_DISK_BANK_PATH, "wb");
+    FILE* image_creator = fopen(V_DISK_PATH, "wb");
 
-    fseek(index_creator, 0, SEEK_SET);
-    fseek(bank_creator, 0, SEEK_SET);
+    fseek(image_creator, 0, SEEK_SET);
 
-    fwrite(index_pool, sizeof(char), V_DISK_INDEX_SIZE, index_creator);
-    fwrite(bank_pool, sizeof(char), V_DISK_BANK_SIZE, bank_creator);
+    fwrite(index_pool, sizeof(char), V_DISK_INDEX_SIZE, image_creator);
+    fwrite(bank_pool, sizeof(char), V_DISK_BANK_SIZE, image_creator);
 
     FFS_DBG_INFO("write to image file finish. \n");
 
-    fclose(index_creator);
-    fclose(bank_creator);
+    fclose(image_creator);
 
     free(index_pool);
     free(bank_pool);
 
-    FFS_DBG_INFO("Image created successfully. \n");
-    FFS_DBG_INFO("index image = %d(Bytes) in path: %s\n", V_DISK_INDEX_SIZE, V_DISK_INDEX_PATH);
-    FFS_DBG_INFO("bank image = %d(Bytes) in path: %s\n", V_DISK_BANK_SIZE, V_DISK_BANK_PATH);
+    FFS_DBG_INFO("Image created successfully in path: %s\n", V_DISK_PATH);
+    FFS_DBG_INFO("index image = %d(Bytes)\n", V_DISK_INDEX_SIZE);
+    FFS_DBG_INFO("bank image = %d(Bytes)\n", V_DISK_BANK_SIZE);
 }
 
 void open_image() {
-    index_fp = fopen(V_DISK_INDEX_PATH, "rb+");
-    bank_fp = fopen(V_DISK_BANK_PATH, "rb+");
+    image_fp = fopen(V_DISK_PATH, "rb+");
 
-    if (index_fp == NULL) {
+    if (image_fp == NULL) {
         create_image();
 
-        index_fp = fopen(V_DISK_INDEX_PATH, "rb+");
-        bank_fp = fopen(V_DISK_BANK_PATH, "rb+");
+        image_fp = fopen(V_DISK_PATH, "rb+");
     }
 
-    fseek(index_fp, 0, SEEK_SET);
-    fseek(bank_fp, 0, SEEK_SET);
+    fseek(image_fp, 0, SEEK_SET);
 
     memset(index_buf, 0, sizeof(index_buf));
 
-    fread(index_buf, sizeof(char), V_DISK_INDEX_SIZE, index_fp);
+    fread(index_buf, sizeof(char), V_DISK_INDEX_SIZE, image_fp);
 
     super_block_buf = (super_block*) index_buf;
 
@@ -81,10 +75,9 @@ void open_image() {
 }
 
 void close_image() {
-    fseek(index_fp, 0, SEEK_SET);
-    fwrite(index_buf, sizeof(char), V_DISK_INDEX_SIZE, index_fp);
-    fclose(index_fp);
-    fclose(bank_fp);
+    fseek(image_fp, 0, SEEK_SET);
+    fwrite(index_buf, sizeof(char), V_DISK_INDEX_SIZE, image_fp);
+    fclose(image_fp);
     FFS_DBG_INFO("Write back to image file.\n");
 }
 
@@ -136,11 +129,11 @@ i32 read_one_block(i32 block_off, char* read_buf, size_t size, off_t off_in_blk)
         return -ENOSPC;
     }
     
-    fseek(bank_fp, block_off + off_in_blk, SEEK_SET);
-    fread(read_buf, size, 1, bank_fp);
+    fseek(image_fp, V_DISK_INDEX_SIZE + block_off + off_in_blk, SEEK_SET);
+    fread(read_buf, size, 1, image_fp);
 
-    FFS_DBG_INFO("read from block: %s\n", read_buf);
-    FFS_DBG_INFO("total_off = %d, size = %d, off_in_blk = %d\n", block_off+off_in_blk, size, off_in_blk);
+    // FFS_DBG_INFO("read from block: %s\n", read_buf);
+    // FFS_DBG_INFO("total_off = %d, size = %d, off_in_blk = %d\n", block_off+off_in_blk, size, off_in_blk);
 
     return 0;
 }
@@ -151,11 +144,11 @@ i32 write_one_block(i32 block_off, const char* write_buf, size_t size, off_t off
         return -ENOSPC;
     }
 
-    FFS_DBG_INFO("write to block: %s\n", write_buf);
-    FFS_DBG_INFO("total_off = %d, size = %d, off_in_blk = %d\n", block_off+off_in_blk, size, off_in_blk);
+    // FFS_DBG_INFO("write to block: %s\n", write_buf);
+    // FFS_DBG_INFO("total_off = %d, size = %d, off_in_blk = %d\n", block_off+off_in_blk, size, off_in_blk);
 
-    fseek(bank_fp, block_off + off_in_blk, SEEK_SET);
-    fwrite(write_buf, size, 1, bank_fp);
+    fseek(image_fp, V_DISK_INDEX_SIZE + block_off + off_in_blk, SEEK_SET);
+    fwrite(write_buf, size, 1, image_fp);
 
     return 0;
 }

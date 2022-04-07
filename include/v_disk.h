@@ -41,7 +41,7 @@ typedef struct super_block {
 
 super_block* super_block_buf;
 
-FILE *index_fp, *bank_fp;
+FILE *image_fp;
 char index_buf[V_DISK_INDEX_SIZE];
 
 // create image: index and block
