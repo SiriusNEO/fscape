@@ -7,19 +7,7 @@
 #ifndef FFS_OPER_H_
 #define FFS_OPER_H_
 
-/* some auxiliary function */ 
-
-// split path to [dir1, dir2, ..., dirn] + file
-i32 split_path(const char* path, char** dir, int* dir_cnt, char* file);
-
-// split path to dir_path + file
-i32 extract_filename(const char* path, char* dir_path, char* file);
-
-// use path to get inode.
-// return INNER_ERROR if the path can not be mapped to a inode
-i32 path_to_inode(const char* path);
-
-/* some standard fs interface */
+/* standard fs interface */
 
 int ffs_getattr
 (const char* path, struct stat* stat_buf);

@@ -1,5 +1,6 @@
 #include "../include/ffs_oper.h"
 
+// split path to [dir1, dir2, ..., dirn] + file
 i32 split_path(const char* path, char** dir, int* dir_cnt, char* file) {
     int len = strlen(path);
 
@@ -39,6 +40,8 @@ i32 split_path(const char* path, char** dir, int* dir_cnt, char* file) {
     return 0;
 }
 
+// use path to get inode.
+// return INNER_ERROR if the path can not be mapped to a inode
 i32 path_to_inode(const char* path) {
     int i, dir_cnt = 0, ret;
 
@@ -136,6 +139,7 @@ error_exit:
     return ret;
 }
 
+// split path to dir_path + file
 i32 extract_filename(const char* path, char* dir_path, char* file) {
     int i, len = strlen(path), border = len-1; 
 
@@ -175,12 +179,16 @@ i32 extract_filename(const char* path, char* dir_path, char* file) {
     return 0;
 }
 
+// link a new inode (is allocated) under parent
+// just do a link without fetching any disk resource!
 i32 link_inode(inode* parent_ptr, inode* this_ptr) {
     this_ptr->next_node = parent_ptr->first_son;
     parent_ptr->first_son = inode_ptr_to_off(this_ptr);
     return 0;
 }
 
+// unlink an inode (is allocated) under parent
+// just do an unlink without freeing any disk resource!
 i32 unlink_inode(inode* parent_ptr, inode* this_ptr) {
     i32 this_off = inode_ptr_to_off(this_ptr);
 
@@ -204,6 +212,7 @@ i32 unlink_inode(inode* parent_ptr, inode* this_ptr) {
     return 0;
 }
 
+// insert a file with the given path. create a new inode and link it.
 i32 insert_file(const char* path, char is_dir) {
     int i;
     char dir_path[MAX_PATH_LEN], file_name[MAX_FN_LEN];
@@ -239,6 +248,8 @@ i32 insert_file(const char* path, char is_dir) {
     return 0;
 }
 
+// destory an inode and free its space.
+// notice: it will be executed recursively to free all inner files
 i32 destory_inode(inode* parent_ptr, inode* this_ptr) {
     // has be checked and must be directory
 
@@ -265,6 +276,8 @@ i32 destory_inode(inode* parent_ptr, inode* this_ptr) {
     return 0;
 }
 
+// a wrapper for destorying inode. 
+// find the inode with the given path and destory the inode. 
 i32 remove_file(const char* path) {
     int i;
     char dir_path[MAX_PATH_LEN], file_name[MAX_FN_LEN];
@@ -291,6 +304,8 @@ i32 remove_file(const char* path) {
 
     return 0;
 }
+
+/* standard fs interface implementation */
 
 int ffs_getattr(const char* path, struct stat* stat_buf) {
 
