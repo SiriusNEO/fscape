@@ -4,7 +4,7 @@ i32 split_path(const char* path, char** dir, int* dir_cnt, char* file) {
     int len = strlen(path);
 
     // judge '/' first makes the code neat
-    if (len == 1) {
+    if (0 == strcmp(path, "/")) {
         *dir_cnt = 0;
         strcpy(file, FS_ROOT);
     } 
@@ -57,7 +57,7 @@ i32 path_to_inode(const char* path) {
         FFS_DBG_INFO("file: %s\n", file);
     */
 
-    i_node* now_ptr;
+    inode* now_ptr;
 
     if (dir_cnt == 0) {
         if (0 != strcmp(file, FS_ROOT)) {
@@ -66,7 +66,7 @@ i32 path_to_inode(const char* path) {
             goto error_exit;
         }
         else {
-            now_ptr = (i_node*) (index_buf + super_block_buf->root_inode);
+            now_ptr = inode_off_to_ptr(super_block_buf->root_inode);
         }
     }
     else {
@@ -77,7 +77,7 @@ i32 path_to_inode(const char* path) {
         }
         else {
             i = 1; // emit root
-            now_ptr = (i_node*) (index_buf + super_block_buf->root_inode);
+            now_ptr = inode_off_to_ptr(super_block_buf->root_inode);
         }
 
         // +1: the last level is "file"
@@ -88,7 +88,7 @@ i32 path_to_inode(const char* path) {
                 goto error_exit;
             }
 
-            i_node* son_ptr = (i_node*) (index_buf + now_ptr->first_son);
+            inode* son_ptr = inode_off_to_ptr(now_ptr->first_son);
             now_ptr = NULL;
 
             if (i < dir_cnt) {
@@ -98,7 +98,7 @@ i32 path_to_inode(const char* path) {
                         now_ptr = son_ptr;
                         break;
                     }
-                    son_ptr = (i_node*) (index_buf + son_ptr->next_node);
+                    son_ptr = inode_off_to_ptr(son_ptr->next_node);
                 }
 
                 if (now_ptr == NULL) {
@@ -114,7 +114,7 @@ i32 path_to_inode(const char* path) {
                         now_ptr = son_ptr;
                         break;
                     }
-                    son_ptr = (i_node*) (index_buf + son_ptr->next_node);
+                    son_ptr = inode_off_to_ptr(son_ptr->next_node);
                 }
 
                 if (now_ptr == NULL) {
@@ -175,6 +175,35 @@ i32 extract_filename(const char* path, char* dir_path, char* file) {
     return 0;
 }
 
+i32 link_inode(inode* parent_ptr, inode* this_ptr) {
+    this_ptr->next_node = parent_ptr->first_son;
+    parent_ptr->first_son = inode_ptr_to_off(this_ptr);
+    return 0;
+}
+
+i32 unlink_inode(inode* parent_ptr, inode* this_ptr) {
+    i32 this_off = inode_ptr_to_off(this_ptr);
+
+    // this is first
+    if (parent_ptr->first_son == this_off) {
+        parent_ptr->first_son = this_ptr->next_node;
+    }
+    else {
+        inode* bro_ptr = inode_off_to_ptr(parent_ptr->first_son);
+
+        while (inode_ptr_to_off(bro_ptr) != EMPTY) {
+            // front
+            if (bro_ptr->next_node == this_off) {
+                bro_ptr->next_node = this_ptr->next_node;
+                break;
+            }
+            bro_ptr = inode_off_to_ptr(bro_ptr->next_node);
+        }
+    }
+
+    return 0;
+}
+
 i32 insert_file(const char* path, char is_dir) {
     int i;
     char dir_path[MAX_PATH_LEN], file_name[MAX_FN_LEN];
@@ -190,47 +219,40 @@ i32 insert_file(const char* path, char is_dir) {
         return parent_off;
     }
 
-    i_node* parent_ptr = (i_node*)(index_buf + parent_off);
+    inode* parent_ptr = inode_off_to_ptr(parent_off);
 
     if (parent_ptr->first_son == NOT_DIRECTORY) {
         return -ENOTDIR;
     }
 
     i32 new_inode_off = fetch_inode();
-    i_node* new_inode_ptr = (i_node*)(index_buf + new_inode_off);
-    memset(new_inode_ptr, 0, sizeof(i_node));
+    inode* new_inode_ptr = inode_off_to_ptr(new_inode_off);
+    memset(new_inode_ptr, 0, sizeof(inode));
 
     new_empty_inode(file_name, is_dir, new_inode_ptr);
 
     // not a directory
     new_inode_ptr->first_son = is_dir ? EMPTY : NOT_DIRECTORY;
 
-    // link list like
-    new_inode_ptr->next_node = parent_ptr->first_son;
-    parent_ptr->first_son = new_inode_off;
+    link_inode(parent_ptr, new_inode_ptr);    
 
     return 0;
 }
 
-i32 destory_inode(i_node* parent_ptr, i_node* this_ptr) {
+i32 destory_inode(inode* parent_ptr, inode* this_ptr) {
     // has be checked and must be directory
 
     i32 this_off = inode_ptr_to_off(this_ptr);
 
-    // this is first
-    if (parent_ptr->first_son == this_off) {
-        parent_ptr->first_son = this_ptr->next_node;
-    }
-    else {
-        i_node* bro_ptr = (i_node*)(index_buf + parent_ptr->first_son);
+    unlink_inode(parent_ptr, this_ptr);
 
-        while (inode_ptr_to_off(bro_ptr) != EMPTY) {
-            // front
-            if (bro_ptr->next_node == this_off) {
-                bro_ptr->next_node = this_ptr->next_node;
-                break;
-            }
-            bro_ptr = (i_node*) (index_buf + bro_ptr->next_node);
+    // free all sons first
+    if (this_ptr->first_son != NOT_DIRECTORY) {
+        inode* son_ptr = inode_off_to_ptr(this_ptr->first_son);
+
+        while (inode_ptr_to_off(son_ptr) != EMPTY) {
+            destory_inode(this_ptr, son_ptr);
+            son_ptr = (inode*) (index_buf + son_ptr->next_node);
         }
     }
 
@@ -239,6 +261,8 @@ i32 destory_inode(i_node* parent_ptr, i_node* this_ptr) {
         free_block(this_ptr->blk_ctx[i].blk_offset);
     }
     free_inode(this_off);
+
+    return 0;
 }
 
 i32 remove_file(const char* path) {
@@ -256,21 +280,11 @@ i32 remove_file(const char* path) {
         return parent_off;
     }
 
-    i_node* parent_ptr = (i_node*)(index_buf + parent_off);
-    i_node* this_ptr = (i_node*)(index_buf + this_off);
+    inode* parent_ptr = inode_off_to_ptr(parent_off);
+    inode* this_ptr = inode_off_to_ptr(this_off);
 
     if (parent_ptr->first_son == NOT_DIRECTORY) {
         return -ENOTDIR;
-    }
-
-    // free all sons first
-    if (this_ptr->first_son != NOT_DIRECTORY) {
-        i_node* son_ptr = (i_node*)(index_buf + this_ptr->first_son);
-
-        while (inode_ptr_to_off(son_ptr) != EMPTY) {
-            destory_inode(this_ptr, son_ptr);
-            son_ptr = (i_node*) (index_buf + son_ptr->next_node);
-        }
     }
 
     destory_inode(parent_ptr, this_ptr);
@@ -280,7 +294,7 @@ i32 remove_file(const char* path) {
 
 int ffs_getattr(const char* path, struct stat* stat_buf) {
 
-    // FFS_DBG_INFO("getattr in <path = %s>\n", path);
+    // FFS_DBG_INFO("@getattr in <path = %s>\n", path);
 
     // uid: user ID
     // gid: group ID
@@ -293,7 +307,7 @@ int ffs_getattr(const char* path, struct stat* stat_buf) {
         return inode_off;
     }
 
-    i_node* inode_ptr = (i_node*) (index_buf + inode_off);
+    inode* inode_ptr = (inode*) (index_buf + inode_off);
 
     memcpy(stat_buf, &inode_ptr->st, sizeof(struct stat));
     stat_buf->st_atime = time(0); // just now
@@ -302,7 +316,7 @@ int ffs_getattr(const char* path, struct stat* stat_buf) {
 }
 
 int ffs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi) {
-    // FFS_DBG_INFO("readdir in <path = %s>\n", path);
+    // FFS_DBG_INFO("@readdir in <path = %s>\n", path);
 
     i32 dir_off = path_to_inode(path);
 
@@ -310,24 +324,24 @@ int ffs_readdir(const char *path, void *buffer, fuse_fill_dir_t filler, off_t of
         return dir_off;
     }
 
-    i_node* dir_ptr = (i_node*) (index_buf + dir_off);
+    inode* dir_ptr = (inode*) (index_buf + dir_off);
 
     if (dir_ptr->first_son == NOT_DIRECTORY) {
         return -ENOTDIR;
     }
 
-    i_node* son_ptr = (i_node*) (index_buf + dir_ptr->first_son);
+    inode* son_ptr = (inode*) (index_buf + dir_ptr->first_son);
 
     while (inode_ptr_to_off(son_ptr) != EMPTY) {
         filler(buffer, son_ptr->file_name, &son_ptr->st, 0);
-        son_ptr = (i_node*) (index_buf + son_ptr->next_node);
+        son_ptr = (inode*) (index_buf + son_ptr->next_node);
     }
 
     return 0;
 }
 
 int ffs_mkdir(const char *path, mode_t mode) {
-    FFS_DBG_INFO("mkdir in <path = %s>\n", path);
+    FFS_DBG_INFO("@mkdir in <path = %s>\n", path);
 
     // "mode" is ignored
 
@@ -337,10 +351,14 @@ int ffs_mkdir(const char *path, mode_t mode) {
 }
 
 int ffs_rmdir(const char *path) {
-    FFS_DBG_INFO("rmdir in <path = %s>\n", path);
+    FFS_DBG_INFO("@rmdir in <path = %s>\n", path);
 
     // "mode" is ignored
     // do we need to delete all son-nodes when rmdir?
+
+    if (0 == strcmp(path, "/")) {
+        return -EPERM;
+    }
 
     int result = remove_file(path);
 
@@ -348,6 +366,7 @@ int ffs_rmdir(const char *path) {
 }
 
 int ffs_unlink(const char *path) {
+    FFS_DBG_INFO("@unlink in <path = %s>\n", path);
 
     int result = remove_file(path);
 
@@ -355,7 +374,7 @@ int ffs_unlink(const char *path) {
 }
 
 int ffs_mknod(const char* path, mode_t mode, dev_t rdev) {
-    FFS_DBG_INFO("mknod in <path = %s>\n", path);
+    FFS_DBG_INFO("@mknod in <path = %s>\n", path);
 
     // "mode" and "rdev" is ignored
 
@@ -365,7 +384,7 @@ int ffs_mknod(const char* path, mode_t mode, dev_t rdev) {
 }
 
 int ffs_read(const char* path, char* buffer, size_t size, off_t offset, struct fuse_file_info* fi) {
-    FFS_DBG_INFO("read in <path = %s> <size = %d> <offset = %d>\n", path, size, offset);
+    FFS_DBG_INFO("@read in <path = %s> <size = %d> <offset = %d>\n", path, size, offset);
 
     i32 inode_off = path_to_inode(path);
 
@@ -373,7 +392,7 @@ int ffs_read(const char* path, char* buffer, size_t size, off_t offset, struct f
         return inode_off;
     }
 
-    i_node* inode_ptr = (i_node*) (index_buf + inode_off);
+    inode* inode_ptr = (inode*) (index_buf + inode_off);
 
     if (inode_ptr->first_son != NOT_DIRECTORY) {
         return -EISDIR;
@@ -393,7 +412,7 @@ int ffs_read(const char* path, char* buffer, size_t size, off_t offset, struct f
     cover_block_num = 1,
     block_idx = 0;
 
-    if (size < front_res_len) {
+    if (size <= front_res_len) {
         first_end_off_in_blk = first_start_off_in_blk + size - 1;
     }
     else {
@@ -429,7 +448,7 @@ int ffs_read(const char* path, char* buffer, size_t size, off_t offset, struct f
 }
 
 int ffs_write(const char* path, const char* buffer, size_t size, off_t offset, struct fuse_file_info* fi) {
-    FFS_DBG_INFO("write in <path = %s> <size = %d> <offset = %d> <buffer = %s>\n", path, size, offset, buffer);
+    FFS_DBG_INFO("@write in <path = %s> <size = %d> <offset = %d> <buffer = %s>\n", path, size, offset, buffer);
 
     i32 inode_off = path_to_inode(path);
 
@@ -437,7 +456,7 @@ int ffs_write(const char* path, const char* buffer, size_t size, off_t offset, s
         return inode_off;
     }
 
-    i_node* inode_ptr = (i_node*) (index_buf + inode_off);
+    inode* inode_ptr = (inode*) (index_buf + inode_off);
 
     if (inode_ptr->first_son != NOT_DIRECTORY) {
         return -EISDIR;
@@ -456,7 +475,7 @@ int ffs_write(const char* path, const char* buffer, size_t size, off_t offset, s
 
     // offset - start_block_idx*BLOCK_SIZE
 
-    if (size < front_res_len) {
+    if (size <= front_res_len) {
         first_end_off_in_blk = first_start_off_in_blk + size - 1;
     }
     else {
@@ -515,4 +534,86 @@ int ffs_write(const char* path, const char* buffer, size_t size, off_t offset, s
         inode_ptr->st.st_size = offset+size;
 
     return size;
+}
+
+int ffs_rename(const char *path, const char *new_path) {
+    FFS_DBG_INFO("@rename in <path = %s> <new_path = %s>\n", path, new_path);
+
+    if (0 == strcmp(path, "/") || 0 == strcmp(new_path, "/")) {
+        return -EPERM;
+    }
+
+    char dir_path[MAX_PATH_LEN], file_name[MAX_FN_LEN];
+    char new_dir_path[MAX_PATH_LEN], new_file_name[MAX_FN_LEN];
+
+    extract_filename(path, dir_path, file_name);
+    extract_filename(new_path, new_dir_path, new_file_name);
+
+    i32 parent_off = path_to_inode(dir_path), 
+        new_parent_off = path_to_inode(new_dir_path), 
+        inode_off = path_to_inode(path), 
+        new_inode_off = path_to_inode(new_path);
+
+    if (parent_off < 0 || new_parent_off < 0 || inode_off < 0) {
+        return -ENOENT;
+    }
+
+    inode *parent_ptr = inode_off_to_ptr(parent_off), 
+           *new_parent_ptr = inode_off_to_ptr(new_parent_off),
+           *inode_ptr = inode_off_to_ptr(inode_off);
+    
+    if (parent_ptr->first_son == NOT_DIRECTORY || new_parent_ptr->first_son == NOT_DIRECTORY) {
+        return -ENOTDIR;
+    }
+
+    // there is file
+    if (new_inode_off != ENOENT) {
+        inode* new_inode_ptr = inode_off_to_ptr(new_inode_off);
+        destory_inode(new_parent_ptr, new_inode_ptr);
+    }
+
+    unlink_inode(parent_ptr, inode_ptr);
+    link_inode(new_parent_ptr, inode_ptr);
+
+    strcpy(inode_ptr->file_name, new_file_name);
+
+    return 0;
+}
+
+int ffs_chmod(const char* path, mode_t mode) {
+    /* not implemented */
+    FFS_DBG_WARN("@chmod not implemented in path: %s\n", path);
+    return 0;
+}
+
+int ffs_chown(const char *path, uid_t uid, gid_t gid) {
+    /* not implemented */
+    FFS_DBG_WARN("@chown not implemented in path: %s\n", path);
+    return 0;
+}
+
+int ffs_truncate(const char *path, off_t size) {
+    /* not implemented */
+    FFS_DBG_WARN("@truncate not implemented in path: %s\n", path);
+    return 0;
+}
+
+int ffs_open(const char *path, struct fuse_file_info *fi) {
+    /* not implemented */
+    FFS_DBG_WARN("@open not implemented in path: %s\n", path);
+    return 0;
+}
+
+int ffs_statfs(const char *path, struct statvfs *statfs_buf) {
+    FFS_DBG_INFO("@statfs in <path = %s>\n", path);
+
+    statfs_buf->f_namemax = MAX_FN_LEN;
+
+    statfs_buf->f_blocks = BLOCK_NUM;
+    statfs_buf->f_bsize = BLOCK_SIZE;
+
+    statfs_buf->f_files = (V_DISK_INDEX_SIZE - sizeof(super_block)) / sizeof(inode);
+    statfs_buf->f_ffree = statfs_buf->f_files - super_block_buf->fs_inode_num;
+
+    return 0;
 }

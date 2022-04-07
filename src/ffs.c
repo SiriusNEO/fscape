@@ -10,9 +10,6 @@ static struct fuse_operations ffs_operations = {
     
     .getattr = ffs_getattr,
     // .symlink = 
-    // .rename = 
-    // .chmod = 
-    // .open = 
     .read = ffs_read,
     .readdir = ffs_readdir,
     .mkdir = ffs_mkdir,
@@ -20,7 +17,13 @@ static struct fuse_operations ffs_operations = {
     .mknod = ffs_mknod,
     .unlink = ffs_unlink,
     .write = ffs_write,
-    // .unlink
+    .rename = ffs_rename,
+    .chmod = ffs_chmod,
+    .chown = ffs_chown,
+    .truncate = ffs_truncate,
+    .open = ffs_open,
+    .statfs = ffs_statfs,
+    
 };
 
 int main(int argc, char* argv[]) {

@@ -22,9 +22,9 @@ typedef int32_t i32;
 #define V_DISK_PATH "/usr/local/lighthouse/softwares/fuse-playground/ffs/disk_image"
 
 #define V_DISK_INDEX_SIZE (10*1048576) // 10M
-// #define V_DISK_BANK_SIZE (20*1048576) // 20M
 
-#define V_DISK_BANK_SIZE (128) // 128 bytes
+#define V_DISK_BANK_SIZE (20*1048576) // 20M
+// #define V_DISK_BANK_SIZE (128) // 128 bytes
 
 #define BLOCK_SIZE 6
 #define BLOCK_NUM (V_DISK_BANK_SIZE / BLOCK_SIZE)

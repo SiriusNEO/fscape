@@ -12,7 +12,7 @@ typedef struct block_ctx {
     size_t size;
 } block_ctx;
 
-typedef struct i_node {
+typedef struct inode {
     char file_name[MAX_FN_LEN];
 
     // link-list attr
@@ -29,14 +29,14 @@ typedef struct i_node {
     // blk ctx
     block_ctx blk_ctx[MAX_BLOCKS_ONE_FILE];
 
-} i_node;
+} inode;
 
 typedef struct super_block {
     i32 root_inode;
     size_t fs_blk_num;
     size_t fs_inode_num;
-    char index_bitmap[MAX_FILE_NUM];
-    char bank_bitmap[BLOCK_NUM];
+    char inode_bitmap[MAX_FILE_NUM];
+    char block_bitmap[BLOCK_NUM];
 } super_block;
 
 super_block* super_block_buf;
@@ -59,16 +59,25 @@ i32 fetch_inode();
 // get the first free inode (head offset) in the bank file
 i32 fetch_block();
 
+// ptr -> off
+i32 inode_ptr_to_off(inode* ptr);
+
+// off -> ptr
+inode* inode_off_to_ptr(i32 offset);
+
 // free a inode
 i32 free_inode(i32 offset);
 
 // free a block
 i32 free_block(i32 offset);
 
+// read only in one_block
 i32 read_one_block(i32 bank_off, char* read_buf, size_t size, off_t off_in_blk);
 
+// write only in one_block
 i32 write_one_block(i32 bank_off, const char* write_buf, size_t size, off_t off_in_blk);
 
-i32 new_empty_inode(const char* file_name, char is_dir, i_node* inode_buf);
+// create an empty inode and fill it into inode_buf
+i32 new_empty_inode(const char* file_name, char is_dir, inode* inode_buf);
 
 #endif
