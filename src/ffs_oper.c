@@ -66,7 +66,7 @@ i32 path_to_inode(const char* path) {
             goto error_exit;
         }
         else {
-            now_ptr = (i_node*) (index_buf + super_node_buf->root_inode);
+            now_ptr = (i_node*) (index_buf + super_block_buf->root_inode);
         }
     }
     else {
@@ -77,7 +77,7 @@ i32 path_to_inode(const char* path) {
         }
         else {
             i = 1; // emit root
-            now_ptr = (i_node*) (index_buf + super_node_buf->root_inode);
+            now_ptr = (i_node*) (index_buf + super_block_buf->root_inode);
         }
 
         // +1: the last level is "file"

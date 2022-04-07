@@ -31,11 +31,11 @@ typedef int32_t i32;
 #define BLOCK_NUM (V_DISK_BANK_SIZE / BLOCK_SIZE)
 
 // #define MAX_ONE_FILE_SIZE (1048576) // 1M
-#define MAX_ONE_FILE_SIZE (64) // 64 bytes
+// #define MAX_ONE_FILE_SIZE (64) // 64 bytes
 #define MAX_FILE_NUM (1024)
 #define MAX_FILE_DEP (128)
 
-#define MAX_BLOCKS_ONE_FILE (MAX_ONE_FILE_SIZE / BLOCK_SIZE) 
+#define MAX_BLOCKS_ONE_FILE 12 
 
 #define MAX_FN_LEN 512
 #define MAX_PATH_LEN (MAX_FILE_DEP * MAX_FN_LEN)

@@ -10,7 +10,7 @@ build: $(SRC_FILES)
 	echo 'Compile Finish. Use ./ffs -f <mountpoint> to mount the fs.'	
 
 clean:
-	rm ffs disk_bank_image disk_index_image
+	rm disk_bank_image disk_index_image
 
 test:
 	./ffs -f /tmp/ffs/

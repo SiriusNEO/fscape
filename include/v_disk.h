@@ -31,15 +31,15 @@ typedef struct i_node {
 
 } i_node;
 
-typedef struct super_node {
+typedef struct super_block {
     i32 root_inode;
     size_t fs_blk_num;
     size_t fs_inode_num;
     char index_bitmap[MAX_FILE_NUM];
     char bank_bitmap[BLOCK_NUM];
-} super_node;
+} super_block;
 
-super_node* super_node_buf;
+super_block* super_block_buf;
 
 FILE *index_fp, *bank_fp;
 char index_buf[V_DISK_INDEX_SIZE];

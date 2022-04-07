@@ -6,21 +6,21 @@ void create_image() {
     char *index_pool = (void *) malloc(sizeof(char) * V_DISK_INDEX_SIZE);
     char *bank_pool = (void *) malloc(sizeof(char) * V_DISK_BANK_SIZE);
 
-    super_node_buf = (super_node*) index_pool;
+    super_block_buf = (super_block*) index_pool;
 
     // set bitmap
-    memset(super_node_buf->index_bitmap, 0, MAX_FILE_NUM);
-    memset(super_node_buf->bank_bitmap, 0, BLOCK_NUM);
+    memset(super_block_buf->index_bitmap, 0, MAX_FILE_NUM);
+    memset(super_block_buf->bank_bitmap, 0, BLOCK_NUM);
 
     FFS_DBG_INFO("set bitmap finish. \n");
 
-    super_node_buf->fs_blk_num = 0; 
-    super_node_buf->root_inode = sizeof(super_node); // super_node - root_inode - inode1 - inode 2 - ...
+    super_block_buf->fs_blk_num = 0; 
+    super_block_buf->root_inode = sizeof(super_block); // super_node - root_inode - inode1 - inode 2 - ...
 
-    i_node* new_root = (i_node*) (index_pool + super_node_buf->root_inode);
+    i_node* new_root = (i_node*) (index_pool + super_block_buf->root_inode);
 
     // init root inode
-    super_node_buf->index_bitmap[0] = 1; // root
+    super_block_buf->index_bitmap[0] = 1; // root
     new_empty_inode(FS_ROOT, 1, new_root);
 
     FFS_DBG_INFO("init index_pool finish. \n");
@@ -65,17 +65,17 @@ void open_image() {
 
     fread(index_buf, sizeof(char), V_DISK_INDEX_SIZE, index_fp);
 
-    super_node_buf = (super_node*) index_buf;
+    super_block_buf = (super_block*) index_buf;
 
     FFS_DBG_INFO("Image loading finished. \n");
-    FFS_DBG_INFO("[ffs profile] total blocks = %d\n", super_node_buf->fs_blk_num);
-    FFS_DBG_INFO("[ffs profile] total files = %d\n", super_node_buf->fs_inode_num);
-    FFS_DBG_INFO("[ffs profile] root i_node in %d\n", super_node_buf->root_inode);
+    FFS_DBG_INFO("[ffs profile] total blocks = %d\n", super_block_buf->fs_blk_num);
+    FFS_DBG_INFO("[ffs profile] total files = %d\n", super_block_buf->fs_inode_num);
+    FFS_DBG_INFO("[ffs profile] root i_node in %d\n", super_block_buf->root_inode);
 
-    i_node* test_ptr = (i_node*)(index_buf + super_node_buf->root_inode);
+    i_node* test_ptr = (i_node*)(index_buf + super_block_buf->root_inode);
 
     FFS_DBG_INFO("[ffs config] root name is %s\n", test_ptr->file_name);
-    FFS_DBG_INFO("[ffs config] super_node size = %d\n", sizeof(super_node));
+    FFS_DBG_INFO("[ffs config] super_block size = %d\n", sizeof(super_block));
     FFS_DBG_INFO("[ffs config] block size = %d\n", BLOCK_SIZE);
     FFS_DBG_INFO("[ffs config] i_node size = %d\n", sizeof(i_node));
 }
@@ -91,10 +91,10 @@ void close_image() {
 i32 fetch_inode() {
     int i;
     for (i = 0; i < MAX_FILE_NUM; ++i) {
-        if (super_node_buf->index_bitmap[i] == 0) {
-            super_node_buf->index_bitmap[i] = 1; // it must be used
-            super_node_buf->fs_inode_num++;
-            return sizeof(super_node) + i * sizeof(i_node);
+        if (super_block_buf->index_bitmap[i] == 0) {
+            super_block_buf->index_bitmap[i] = 1; // it must be used
+            super_block_buf->fs_inode_num++;
+            return sizeof(super_block) + i * sizeof(i_node);
         }
     }
     FFS_DBG_ERR("No space to get free inode");
@@ -104,9 +104,9 @@ i32 fetch_inode() {
 i32 fetch_block() {
     int i;
     for (i = 0; i < BLOCK_NUM; ++i) {
-        if (super_node_buf->bank_bitmap[i] == 0) {
-            super_node_buf->bank_bitmap[i] = 1; // it must be used
-            super_node_buf->fs_blk_num++;
+        if (super_block_buf->bank_bitmap[i] == 0) {
+            super_block_buf->bank_bitmap[i] = 1; // it must be used
+            super_block_buf->fs_blk_num++;
             return i * BLOCK_SIZE;
         }
     }
@@ -119,14 +119,14 @@ i32 inode_ptr_to_off(i_node* ptr) {
 }
 
 i32 free_inode(i32 offset) {
-    super_node_buf->index_bitmap[(offset - sizeof(super_node)) / sizeof(i_node)] = 0;
-    super_node_buf->fs_inode_num--;
+    super_block_buf->index_bitmap[(offset - sizeof(super_block)) / sizeof(i_node)] = 0;
+    super_block_buf->fs_inode_num--;
     return 0;
 }
 
 i32 free_block(i32 offset) {
-    super_node_buf->bank_bitmap[offset / BLOCK_SIZE] = 0;
-    super_node_buf->fs_blk_num--;
+    super_block_buf->bank_bitmap[offset / BLOCK_SIZE] = 0;
+    super_block_buf->fs_blk_num--;
     return 0;
 }
 
