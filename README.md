@@ -1,6 +1,6 @@
 # fscape 
 
-A **F**ile **S**ystem E**scape** Game. Use `cd` to move, find `exit ` in the fs!
+A **F**ile **S**ystem E**scape** Game. Use `cd` to move, find `exit` in the fs!
 
 Fscape is a DIY homework for my OS course. It contains two parts:
 
