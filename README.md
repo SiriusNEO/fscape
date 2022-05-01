@@ -49,7 +49,7 @@ YOU CAN ONLY USE THE FOLLOWING COMMANDS
 
 ```
 cd: move in the fs
-ls: check the files in current room.
+ls: check in current room.
 cat: chat with others.
 echo: write secret words to exit.
 ```
