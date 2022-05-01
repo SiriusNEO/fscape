@@ -133,12 +133,14 @@ The total content is stored in a file named `disk_image`. It contains three part
 
 ##### Block Located Strategy
 
-One file may contains several blocks. 
+One file may contain several blocks. 
 
 Because ffs is just a toy fs (which is not designed to store many files initially), I do not use some complicated methods to search blocks from inodes: ffs inode directly **stores addresses of all blocks ** (Compared to Linux Ext4, which stores addresses of first 12 blocks and use single-indirect, double indirect, triple indirect...).
 
 ##### Read-write Strategy
 
-ffs does not have cache. So each time it just read/write files from/to disk.
+ffs does not have cache. So each time it just reads/writes files from/to disk.
 
-Specially, super_block is read from file and resident in memory.
+Specially, super_block is read from disk_image and resident in memory.
+
+If ffs is umounted normally, all data will be written back to `disk_image` file.
