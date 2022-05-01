@@ -26,7 +26,7 @@ typedef int32_t i32;
 #define V_DISK_BANK_SIZE (20*1048576) // 20M
 // #define V_DISK_BANK_SIZE (128) // 128 bytes
 
-#define BLOCK_SIZE 6
+#define BLOCK_SIZE (4*1024) // 4K
 #define BLOCK_NUM (V_DISK_BANK_SIZE / BLOCK_SIZE)
 
 // #define MAX_ONE_FILE_SIZE (1048576) // 1M

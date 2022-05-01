@@ -5,6 +5,8 @@
 #define FFS_LOG_H_
 
 static void FFS_DBG_INFO(const char* format, ...) {
+    return;
+
     printf("[INFO] ");
     va_list v_args;
     va_start(v_args, format);
@@ -23,6 +25,8 @@ static void FFS_DBG_ERR(const char* format, ...) {
 }
 
 static void FFS_DBG_WARN(const char* format, ...) {
+    return;
+
     printf("[WARN] ");
     va_list v_args;
     va_start(v_args, format);

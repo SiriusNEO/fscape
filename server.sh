@@ -1,0 +1,1 @@
+./server /tmp/ffs < path_cache

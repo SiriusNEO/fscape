@@ -2,3 +2,7 @@ disk_image
 ffs
 test.out
 .vscode/
+path_cache
+secret_word
+server
+test

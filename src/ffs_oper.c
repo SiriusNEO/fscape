@@ -284,8 +284,8 @@ i32 remove_file(const char* path) {
 
     extract_filename(path, dir_path, file_name);
 
-    // FFS_DBG_INFO("dir_path = %s\n", dir_path);
-    // FFS_DBG_INFO("file_name = %s\n", file_name);
+    FFS_DBG_INFO("dir_path = %s\n", dir_path);
+    FFS_DBG_INFO("file_name = %s\n", file_name);
 
     i32 parent_off = path_to_inode(dir_path), this_off = path_to_inode(path);
     
