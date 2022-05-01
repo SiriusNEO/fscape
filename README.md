@@ -48,10 +48,10 @@ The goal of this game is to "escape from the file system `/tmp/ffs`" as fast as 
 YOU CAN ONLY USE THE FOLLOWING COMMANDS
 
 ```
-cd
-ls
-cat
-echo
+cd: move in the fs
+ls: check the files in current room.
+cat: chat with others.
+echo: write secret words to exit.
 ```
 
 The player will be put into a file system with many **rooms** (they are all directories).
@@ -110,7 +110,20 @@ rename
 statfs
 ```
 
-You can do almost all basic fs operations on ffs like read, write, mmap, echo, touch, etc.
+You can do almost all basic fs operations on ffs.
+
+```
+cd
+ls
+rm 
+mkdir/rmdir
+cat
+echo
+touch
+stat
+
+open/read/write/mmap (in C)
+```
 
 Some operations are declared but not implemented. (e.g. File Permissions Management)
 
