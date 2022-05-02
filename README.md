@@ -89,6 +89,8 @@ make clean
 
 To remove the disk image and umount the ffs.
 
+Notice: the player shell should quit ffs first otherwise umount will fail because `target is budy`.
+
 ## ffs
 
 **F**ake **F**ile **S**ystem is a toy FUSE-based user-space file system. 
