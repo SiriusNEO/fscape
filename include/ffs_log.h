@@ -5,7 +5,7 @@
 #define FFS_LOG_H_
 
 static void FFS_DBG_INFO(const char* format, ...) {
-    return;
+    // return;
 
     printf("[INFO] ");
     va_list v_args;

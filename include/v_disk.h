@@ -39,10 +39,10 @@ typedef struct super_block {
     char block_bitmap[BLOCK_NUM];
 } super_block;
 
-super_block* super_block_buf;
+extern super_block* super_block_buf;
 
-FILE *image_fp;
-char index_buf[V_DISK_INDEX_SIZE];
+extern FILE *image_fp;
+extern char index_buf[V_DISK_INDEX_SIZE];
 
 // create image: index and block
 void create_image();

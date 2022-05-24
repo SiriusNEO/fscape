@@ -1,5 +1,10 @@
 #include "../include/v_disk.h"
 
+super_block* super_block_buf;
+
+FILE *image_fp;
+char index_buf[V_DISK_INDEX_SIZE];
+
 void create_image() {
     FFS_DBG_INFO("No image found. Create new image.\n");
 

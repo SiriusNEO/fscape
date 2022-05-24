@@ -19,7 +19,7 @@ typedef int32_t i32;
 
 /* virtual disk */
 
-#define V_DISK_PATH "/usr/local/lighthouse/softwares/fuse-playground/ffs/disk_image"
+#define V_DISK_PATH "disk_image"
 
 #define V_DISK_INDEX_SIZE (10*1048576) // 10M
 
