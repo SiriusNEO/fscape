@@ -39,7 +39,7 @@ Then in the player shell run
 source player.sh <mountpoint>
 ```
 
-It will bring you to the root of ffs. (default, `/tmp/ffs`)
+It will bring you to the root of ffs.
 
 Finally, it is time to start the server. In the server shell, run
 
