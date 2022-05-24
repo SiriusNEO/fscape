@@ -53,7 +53,7 @@ Then your shell will be like (left: server shell, right: player shell)
 
 ### Play
 
-The goal of this game is to "escape from the file system `/tmp/ffs`" as fast as you can.
+The goal of this game is to "escape from the file system" as fast as you can.
 
 YOU CAN ONLY USE THE FOLLOWING COMMANDS
 
