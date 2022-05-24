@@ -1,6 +1,6 @@
 # fscape 
 
-A **F**ile **S**ystem E**scape** Game. Use `cd` to move, find `exit` in the fs!
+A **F**ile **S**ystem E**scape** Game. Use `cd` to move, find `exit ` in the fs!
 
 Fscape is a DIY homework for my OS course. It contains two parts:
 
@@ -10,6 +10,21 @@ Fscape is a DIY homework for my OS course. It contains two parts:
 
 
 ## How to play
+
+### Config
+
+Install libfuse2 by apt
+
+```
+sudo apt install libfuse-dev
+```
+
+Some import default settings
+
+- mount point:  `tmp/ffs` (make it first!)  
+- disk image path:  `./disk_image` 
+
+Other settings see `define.h` for details. 
 
 ### Start
 
@@ -88,8 +103,6 @@ make clean
 ```
 
 To remove the disk image and umount the ffs.
-
-Notice: the player shell should quit ffs first otherwise umount will fail because `target is budy`.
 
 ## ffs
 
