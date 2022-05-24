@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 
 #ifndef CONFIG_H_
 #define CONFIG_H_

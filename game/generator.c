@@ -71,7 +71,7 @@ void build_secret_word() {
 
     // printf("%s\n", secret_word[secret_word_pos]);
 
-    fprintf(sw_fp, secret_word[secret_word_pos]);
+    fprintf(sw_fp, "%s", secret_word[secret_word_pos]);
     fprintf(sw_fp, "\n");
 }
 

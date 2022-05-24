@@ -19,12 +19,7 @@ Install libfuse2 by apt
 sudo apt install libfuse-dev
 ```
 
-Some import default settings
-
-- mount point:  `tmp/ffs` (make it first!)  
-- disk image path:  `./disk_image` 
-
-Other settings see `define.h` for details. 
+Some settings see `define.h` for details. 
 
 ### Start
 
@@ -33,7 +28,7 @@ To have a good experience, I strongly suggest using two shells (a server shell a
 First, run in the server shell 
 
 ```
-./preprocess.sh
+./preprocess.sh <mountpoint>
 ```
 
 to mount the fs. 
@@ -41,7 +36,7 @@ to mount the fs.
 Then in the player shell run
 
 ```
-source player.sh
+source player.sh <mountpoint>
 ```
 
 It will bring you to the root of ffs. (default, `/tmp/ffs`)
