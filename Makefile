@@ -15,8 +15,8 @@ build: $(SRC_FILES)
 	echo 'Compile Finish. Use ./ffs -f <mountpoint> to mount the fs.'	
 
 clean:
-	umount /tmp/ffs -f
+	umount tmp -f
 	rm disk_image
 
 test:
-	./ffs -f /tmp/ffs/
+	./ffs -f tmp

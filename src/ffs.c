@@ -23,7 +23,7 @@ static struct fuse_operations ffs_operations = {
     .truncate = ffs_truncate,
     .open = ffs_open,
     .statfs = ffs_statfs,
-    
+    .utimens = ffs_utimens
 };
 
 int main(int argc, char* argv[]) {

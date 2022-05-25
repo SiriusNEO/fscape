@@ -31,7 +31,7 @@ First, run in the server shell
 ./preprocess.sh <mountpoint>
 ```
 
-to mount the fs. 
+to mount the fs.
 
 Then in the player shell run
 
@@ -94,10 +94,10 @@ PS: You will also find some **NPC**s. You can cat them to chat with them. It is 
 After each round, run
 
 ```
-make clean
+./clean.sh
 ```
 
-To remove the disk image and umount the ffs.
+To remove related files and umount ffs. **This bash will remove the disk image of ffs.**
 
 ## ffs
 
@@ -118,6 +118,7 @@ unlink
 write
 rename
 statfs
+utimens
 ```
 
 You can do almost all basic fs operations on ffs.
@@ -126,6 +127,7 @@ You can do almost all basic fs operations on ffs.
 cd
 ls
 rm 
+mv
 mkdir/rmdir
 cat
 echo

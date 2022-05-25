@@ -38,7 +38,7 @@ typedef int32_t i32;
 #define MAX_BLOCKS_ONE_FILE 12 
 
 #define MAX_FN_LEN 512
-#define MAX_PATH_LEN (MAX_FILE_DEP * MAX_FN_LEN)
+#define MAX_PATH_LEN (MAX_FILE_DEP * MAX_FN_LEN + MAX_FILE_DEP + 5)
 
 /* errno */
 

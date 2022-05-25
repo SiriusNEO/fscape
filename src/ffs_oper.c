@@ -632,3 +632,20 @@ int ffs_statfs(const char *path, struct statvfs *statfs_buf) {
 
     return 0;
 }
+
+int ffs_utimens(const char *path, const struct timespec tv[2]) {
+    FFS_DBG_INFO("@utimens in <path = %s> <atime = %d> <mtime = %d>\n", path, tv[0].tv_sec, tv[1].tv_sec);
+
+    i32 inode_off = path_to_inode(path);
+
+    if (inode_off < 0) {
+        return inode_off;
+    }
+
+    inode* inode_ptr = (inode*) (index_buf + inode_off);
+
+    inode_ptr->st.st_atime = tv[0].tv_sec;
+    inode_ptr->st.st_mtime = tv[1].tv_sec;
+
+    return 0;
+}

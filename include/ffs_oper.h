@@ -51,4 +51,7 @@ int ffs_open
 int ffs_statfs
 (const char *path, struct statvfs *statfs_buf);
 
+int ffs_utimens
+(const char *path, const struct timespec tv[2]);
+
 #endif
