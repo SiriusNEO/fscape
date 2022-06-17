@@ -582,7 +582,7 @@ int ffs_rename(const char *path, const char *new_path) {
     }
 
     // there is file
-    if (new_inode_off != ENOENT) {
+    if (new_inode_off > 0) {
         inode* new_inode_ptr = inode_off_to_ptr(new_inode_off);
         destory_inode(new_parent_ptr, new_inode_ptr);
     }
