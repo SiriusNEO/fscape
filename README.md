@@ -31,7 +31,9 @@ First, run in the server shell
 ./preprocess.sh <mountpoint>
 ```
 
-to mount the fs.
+to mount the fs and generate a game map. A map is a file system like:
+
+![](asset/tree.png)
 
 Then in the player shell run
 
